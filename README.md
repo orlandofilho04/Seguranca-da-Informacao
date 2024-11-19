@@ -28,8 +28,6 @@ Neste projeto, você se concentrará em projetar, implantar e gerenciar uma rede
 - provisioners
   - dhcp_provision.sh
   - dns_provision.sh
-  - ftp_provision.sh
-  - nfs_provision.sh
   - web_provision.sh
   - vm2_provision.sh
 - vagrantfile
@@ -37,12 +35,15 @@ Neste projeto, você se concentrará em projetar, implantar e gerenciar uma rede
 
 ## Pré-requisitos
 
-- Considerar sistema de criação Linux Mint 21.2
+- Considerar sistema de criação Ubuntu Based
 - Vagrant 2.2.19
 - VirtualBox 6.1
 - Docker 24.0.5
-- Imagem ISO do Ubuntu Server 20.04 LTS já na pasta "/root/.vagrant.d/boxes"
-- Imagens Docker dos serviços a serem utilizadas: DHCP, DNS, Web, FTP e NFS. "Web: https://hub.docker.com/_/httpd", "NFS: https://hub.docker.com/r/thiagofelix/nfs_ubuntu", "DNS: https://hub.docker.com/r/ubuntu/bind9", "FTP: https://hub.docker.com/r/bogem/ftp", "DHCP: https://hub.docker.com/r/networkboot/dhcpd"
+- Imagem ISO do Ubuntu Server 20.04 LTS deverá estar na pasta "/root/.vagrant.d/boxes"
+- Imagens Docker dos serviços a serem utilizadas: DHCP, DNS, Web. 
+  - "Web: https://hub.docker.com/_/httpd"
+  - "DNS: https://hub.docker.com/r/ubuntu/bind9"
+  - "DHCP: https://hub.docker.com/r/networkboot/dhcpd"
 
 ## Topologia
 
@@ -79,7 +80,7 @@ A topologia de rede resultante desse trabalho é uma rede privada com duas máqu
 - Sub-rede da VM2 (Cliente):
   - Interface 1:
     - Tipo: Rede Privada
-    - Endereço IP: 192.168.56.x (de 0 a 254, menos o 10, reservado para vm1) Determinado a partir do DHP
+    - Endereço IP: 192.168.56.x (de 0 a 254, menos o 10, reservado para vm1) Determinado a partir do DHcP
     - Máscara de Sub-rede: /24 (255.255.255.0)
 
 ## Provisionamento
@@ -101,18 +102,6 @@ Os scripts de provisionamento de cada VM está localizado na pasta "provisioners
   - docker pull ubuntu/bind9: Baixa a imagem do Docker do repositório Docker Hub
   - sudo docker run -d --restart always --name dns -e TZ=UTC -p 30053:53 -p 30053:53/udp -v /vagrantDNS:/etc/bind ubuntu/bind9:9.16-20.04_beta: Inicia um contêiner Docker a partir da imagem do Bind9, mapeando a porta 300053 do host para a porta 53 do contêiner (TCP e UDP) e mapeia os arquivos de configurações do Bind9 da máquina hospedeira (localizado em /vagrantDNS) para dentro do contêiner no diretório /etc/bind
 
-- ftp_provision.sh
-
-  - apt install -y docker.io: Instala o Docker na máquina virtual
-  - docker pull bogem/ftp: Baixa a imagem do Docker do repositório Docker Hub
-  - sudo docker run -d -v /vagrantFTP:/home/vsftpd \: Inicia um contêiner Docker a partir da imagem do servidor FTP, mapeando o diretório /vagrantFTP da máquina hospedeira para o diretório /home/vsftpd dentro do contêiner, mapeia as portas necessárias para o funcionamento do servidor FTP, mapeia a porta 21 para dados, fefine o nome de usuário e senha para acesso ao servidor FTP e define o endereço IP para o modo de conexão passiva
-
-- nfs_provision.sh
-
-  - apt install -y docker.io: Instala o Docker na máquina virtual
-  - docker pull thiagofelix/nfs_ubuntu: Baixa a imagem do Docker do repositório Docker Hub
-  - sudo docker run -d --restart always -e SYNC=true --name nfs -p 2049:2049 --privileged -v /vagrantNFS:/nfsshare -e SHARED_DIRECTORY=/nfsshare thiagofelix/nfs_ubuntu: Inicia um contêiner Docker a partir da imagem, define a política de reinicialização do contêiner como "always", ou seja, o contêiner será reiniciado automaticamente se parar por algum motivo, define a variável de ambiente SYNC como true , atribui o nome "nfs" ao contêiner para identificação mais fácil, mapeia a porta 2049 do host para a porta 2049 do contêiner, concede ao contêiner privilégios adicionais, mapeia o diretório /vagrantNFS da máquina hospedeira para o diretório /nfsshare dentro do contêiner, este diretório compartilhado será disponibilizado via NFS e define o diretório a ser compartilhado via NFS como /nfsshare
-
 - web_provision.sh
 
   - apt install -y docker.io: Instala o Docker na máquina virtual
@@ -128,8 +117,6 @@ Os scripts de provisionamento de cada VM está localizado na pasta "provisioners
 - DHCP: O serviço DHCP estará ouvindo na porta 67 UDP.
 - DNS: O serviço DNS estará ouvindo na porta 53 TCP/UDP.
 - Servidor Web: O servidor web estará acessível na porta 80 TCP.
-- Servidor FTP: O servidor FTP estará acessível na porta 21 TCP.
-- Servidor NFS: O servidor NFS estará acessível na porta 2049 TCP/UDP.
 
 ## Funcionamento
 
@@ -155,4 +142,3 @@ A máquina 2 (VM2) serve para acessar todos os serviços dispostos na máquina 1
 - Teste servidor Web(Apache)
   - ![servidorweb](https://github.com/orlandofilho04/Trabalho-Final-Administracao-de-Redes/assets/116850972/ed9818d0-04a8-40da-91bc-112ef2c9d4bd) <br> Através da máquina 2 (vm2) utilizando o comando 'wget', o arquivo 'index.html' é baixado através do IP e porta do servidor apache da máquina 1 (vm1)
 - Teste servidor FTP
-  - ![servidorftp](https://github.com/orlandofilho04/Trabalho-Final-Administracao-de-Redes/assets/116850972/84276ac8-9a4c-48b8-b88f-9a086b53e95f) <br> Utilizando o comando 'ftp' na máquina 2 (vm2) com IP e porta da máquina 1 (vm1), servidor FTP, realiza o login e com o comando 'get' realiza o download do arquivo para a máquina 2 (vm2)
