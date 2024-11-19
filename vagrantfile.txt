@@ -25,7 +25,6 @@ Vagrant.configure("2") do |config|
     #MAQUINAS CLIENTES
     config.vm.define "vm2" do |vm2|
       vm2.vm.hostname = "vm2"
-      vm2.vm.hostname = "vm2"
       vm2.vm.box = "ubuntu/focal64"
       vm2.vm.provider "virtualbox" do |vb|
         vb.memory = 2048
