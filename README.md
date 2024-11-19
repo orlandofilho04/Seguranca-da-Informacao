@@ -1,13 +1,13 @@
-## Trabalho Final de Administração de Redes de Computadores
+## Trabalho Final de Segurança da Informação
 
-Neste projeto, você se concentrará em projetar, implantar e gerenciar uma rede empresarial usando tecnologia Linux, com ênfase em serviços como DHCP, DNS, Web, FTP, NFS e virtualização com Vagrant e Docker.
+Neste projeto, você se concentrará em projetar, implantar e gerenciar uma rede usando tecnologia Linux, com ênfase em serviços como DHCP, DNS, Web e virtualização com Vagrant e Docker.
 
 ## Instruções de Uso
 
 1. Clone o repositório do Github.
 2. Acesse-o pelo terminal a pasta onde o projeto foi clonado e execute o comando "vagrant up" para iniciar a criação das VMs.
 3. Verifique os status de cada VM com o comando "vagrant status" e veja se estão criadas ou não.
-4. Após verificar os status de cada VM, digite "vagrant ssh" junto com o nome da VM (servicos-vm) para iniciar o shell de cada uma.
+4. Após verificar os status de cada VM, digite "vagrant ssh" junto com o nome da VM (vm1 ou vm2) para iniciar o shell de cada uma.
 5. Por fim, desligue as VMs digitando o comando "vagrant halt", e caso queira apaga-las, digite o comando "vagrant destroy".
 
 ## Estrutura do Projeto
@@ -19,10 +19,6 @@ Neste projeto, você se concentrará em projetar, implantar e gerenciar uma rede
   - named.conf
   - named.conf.local
   - rndc.key
-- DockerFTP
-  - vsftpd.conf
-- DockerNFS
-  - teste.txt
 - DockerWeb
   - index.html
 - provisioners
@@ -123,11 +119,9 @@ Os scripts de provisionamento de cada VM está localizado na pasta "provisioners
 O arquivo `Vagrantfile` está configurado para criar uma máquina virtual Ubuntu e provisionar contêineres Docker para cada serviço.
 A VM1 funciona como um gateway entre as sub-redes, permitindo a comunicação entre a VM2 e a rede conectada à VM1.
 A VM2, ao estar em uma sub-rede separada, pode acessar a VM1 (com IP 192.168.56.10) e possivelmente outras máquinas ou serviços na rede conectada à VM1.
-As máquinas estão provisionadas com scripts shell para atualização de pacotes, instalação de serviços (como DHCP, DNS, FTP, NFS e Web.) e configurações específicas.
+As máquinas estão provisionadas com scripts shell para atualização de pacotes, instalação de serviços (como DHCP, DNS e Web.) e configurações específicas.
 O script de provisionamento DHCP automatiza o processo de instalação do Docker na máquina virtual, baixa a imagem de um servidor DHCP, copia o arquivo de configuração dhcpd.conf para dentro do contêiner e inicia um contêiner Docker com a configuração apropriada para servir como servidor DHCP na rede da máquina virtual, com isso ele atribui endereços IP automaticamente aos dispositivos na rede.
 O script de provisionamento DNS automatiza a configuração de um contêiner Docker com o CoreDNS, especificando os arquivos de configuração e de banco de dados necessários para o funcionamento do servidor DNS e redirecionando as portas apropriadas para permitir o tráfego DNS, com isso ele resolve os nomes de domínio dentro da rede e configura registros DNS.
-O script de provisionamento FTP configura um servidor FTP dentro de um contêiner Docker, especificando as portas a serem usadas, mapeando um diretório da máquina hospedeira para o contêiner, definindo credenciais de acesso e permitindo o reinício automático do contêiner em caso de falha, com isso ele permiti a transferência de arquivos na rede.
-O script de provisionamento NFS configura um servidor NFS em um contêiner Docker na máquina virtual, compartilhando o diretório /vagrantNFS da máquina hospedeira para que possa ser acessado por outros dispositivos na rede através do protocolo NFS, com isso ele permite compartilhar diretórios e arquivos entre máquinas na rede.
 O script de provisionamento Web configura e inicia um servidor web Apache dentro de um contêiner Docker na máquina virtual, permitindo o acesso aos arquivos presentes no diretório ./DockerWeb/ da máquina hospedeira através do servidor web no contêiner, com isso ele fornece serviços de hospedagem de sites internos.
 O script de provisionamento VM2 realiza as etapas necessárias para configurar o cliente NFS na máquina virtual, incluindo a instalação dos pacotes necessários e a criação de um diretório onde sistemas de arquivos remotos podem ser montados.
 A máquina 2 (VM2) serve para acessar todos os serviços dispostos na máquina 1 (VM1) para fins de testes.
@@ -135,10 +129,9 @@ A máquina 2 (VM2) serve para acessar todos os serviços dispostos na máquina 1
 ## Resultados dos Testes
 
 - Teste servidor DHCP
-  - ![servidordhcp1](https://github.com/orlandofilho04/Trabalho-Final-Administracao-de-Redes/assets/116850972/c794d18e-334b-403f-9b06-4abd270d05fd) <br> Demostra o log do container, configurado, DHCP na máquina 1 (vm1) e testa a conexão a máquina 2 (vm2)
-  - ![servidordhcp2](https://github.com/orlandofilho04/Trabalho-Final-Administracao-de-Redes/assets/116850972/b91c204e-8fec-43f6-9b4b-d1efeb8c8b71) <br> Demonstra na máquina 2 (vm2) que a rede está configurada como DHCP, estando na mesma rede (faixa de IP) e conecta a máquina 1 (vm1)
+  - ![servidordhcp1](https://github.com/orlandofilho04/Trabalho-Final-Administracao-de-Redes/assets/116850972/c794d18e-334b-403f-9b06-4abd270d05fd) <br> Demostra o log do container, configurado, DHCP na máquina 1 (vm1) e testa a conexão a máquina 2 (vm2).
+  - ![servidordhcp2](https://github.com/orlandofilho04/Trabalho-Final-Administracao-de-Redes/assets/116850972/b91c204e-8fec-43f6-9b4b-d1efeb8c8b71) <br> Demonstra na máquina 2 (vm2) que a rede está configurada como DHCP, estando na mesma rede (faixa de IP) e conecta a máquina 1 (vm1).
 - Teste servidor DNS
   - ![servidordns](https://github.com/orlandofilho04/Trabalho-Final-Administracao-de-Redes/assets/116850972/1fc3ad10-4435-4b5d-8cab-e4bdfa534b8a) <br> Demostra o comando 'dig' com o domínio 'example.com' e também usa a ferramente 'nslookup', mostrando a resolução de nomes nesse domínio, e mostra o arquivo resolv.conf os nomes.
 - Teste servidor Web(Apache)
-  - ![servidorweb](https://github.com/orlandofilho04/Trabalho-Final-Administracao-de-Redes/assets/116850972/ed9818d0-04a8-40da-91bc-112ef2c9d4bd) <br> Através da máquina 2 (vm2) utilizando o comando 'wget', o arquivo 'index.html' é baixado através do IP e porta do servidor apache da máquina 1 (vm1)
-- Teste servidor FTP
+  - ![servidorweb](https://github.com/orlandofilho04/Trabalho-Final-Administracao-de-Redes/assets/116850972/ed9818d0-04a8-40da-91bc-112ef2c9d4bd) <br> Através da máquina 2 (vm2) utilizando o comando 'wget', o arquivo 'index.html' é baixado através do IP e porta do servidor apache da máquina 1 (vm1).
