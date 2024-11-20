@@ -29,7 +29,6 @@ Neste projeto, você se concentrará em projetar, implantar e gerenciar uma rede
 - Imagem ISO do Ubuntu Server 20.04 LTS deverá estar na pasta "/root/.vagrant.d/boxes"
 - Imagem Docker do serviço a ser utilizado: Web. 
   - "Web: https://hub.docker.com/_/httpd"
-  - "DNS: https://hub.docker.com/r/ubuntu/bind9"
 
 ## Topologia
 
@@ -79,7 +78,7 @@ Os scripts de provisionamento de cada VM está localizado na pasta "provisioners
   - sudo docker run -d -v /vagrantWeb:/usr/local/apache2/htdocs/ --restart always -p 80:80 httpd: Inicia um contêiner Docker a partir da imagem do Apache HTTP Server, mapeando o diretório /vagrantWeb da máquina hospedeira para o diretório /usr/local/apache2/htdocs/ dentro do contêiner e faz o mapeamento da porta 80 do host para a porta 80 do contêiner, permitindo o acesso ao servidor web Apache pelo navegador
 
 - vm2_provision.sh
-  - apt install -y nfs-common: Instala o pacote nfs-common na máquina virtual
+  - apt update: Verifica atualizações
 
 ## Configuração dos Serviços
 
@@ -92,7 +91,7 @@ A VM1 funciona como um gateway entre as sub-redes, permitindo a comunicação en
 A VM2, ao estar em uma sub-rede separada, pode acessar a VM1 (com IP 192.168.56.10) e possivelmente outras máquinas ou serviços na rede conectada à VM1.
 As máquinas estão provisionadas com scripts shell para atualização de pacotes, instalação do serviço (Web) e configurações específicas.
 O script de provisionamento Web configura e inicia um servidor web Apache dentro de um contêiner Docker na máquina virtual, permitindo o acesso aos arquivos presentes no diretório ./DockerWeb/ da máquina hospedeira através do servidor web no contêiner, com isso ele fornece serviços de hospedagem de sites internos.
-O script de provisionamento VM2 realiza as etapas necessárias para configurar o cliente NFS na máquina virtual, incluindo a instalação dos pacotes necessários.
+O script de provisionamento VM2 realiza uma verificação de atualizações, incluindo a instalação dos pacotes necessários.
 A máquina 2 (VM2) serve para acessar todos os serviços dispostos na máquina 1 (VM1) para fins de testes.
 
 ## Resultados dos Testes

@@ -22,7 +22,6 @@ Vagrant.configure("2") do |config|
       vm2.vm.provider "virtualbox" do |vb|
         vb.memory = 2048
         vb.cpus = 2
-
       end
         vm2.vm.network "private_network", type: "dhcp"
         vm2.vm.provision "shell", path: "provisioners/vm2_provision.sh"
