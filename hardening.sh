@@ -19,8 +19,17 @@ iptables -A OUTPUT -p tcp --sport 80 -j ACCEPT
 iptables -A INPUT -p tcp --dport 22 -j ACCEPT
 iptables -A OUTPUT -p tcp --sport 22 -j ACCEPT
 
+# Ativar Loopback
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A OUTPUT -o lo -j ACCEPT
+
 # Instalando o xinetd
 apt-get install xinetd -y
+
+# Crio usuario apache com as permições corretas
+useradd apache
+groupadd apache
+chown -R apache:apache /var/www/html
 
 # Configurando o hardening xinetd apache
 echo "service apache" >> /etc/xinetd.d/apache
@@ -81,4 +90,5 @@ echo "}" >> /etc/xinetd.d/ssh
 tail -f /var/log/httpd/access_log
 tail -f /var/log/httpd/error_log
 
-
+# Movendo o arquivo httpd.conf para a pasta de configuração do apache
+mv /VagrantWeb/httpd.conf /etc/httpd/conf/httpd.conf
