@@ -1,0 +1,41 @@
+Para realizar um bom hardening em um serviço web Apache, você pode seguir estas práticas recomendadas:
+
+Remover a versão do servidor: Edite o arquivo de configuração do Apache (httpd.conf ou apache2.conf) e adicione as seguintes linhas:
+
+plaintext
+ServerTokens Prod
+ServerSignature Off
+Isso impede que a versão do servidor seja exibida nas respostas HTTP2.
+
+Desabilitar a listagem de diretórios: No arquivo de configuração do Apache, adicione ou modifique a diretiva para desabilitar a listagem de diretórios:
+
+plaintext
+<Directory /var/www/html>
+    Options -Indexes
+</Directory>
+Isso evita que os visitantes vejam a estrutura de diretórios do seu servidor2.
+
+Desabilitar métodos HTTP desnecessários: Desabilite métodos HTTP como TRACE, que podem ser usados em ataques de cross-site tracing:
+
+plaintext
+TraceEnable Off
+Adicione essa linha ao final do arquivo de configuração do Apache3.
+
+Habilitar HTTPS: Utilize HTTPS para criptografar a comunicação entre o cliente e o servidor. Você pode configurar o SSL/TLS no Apache seguindo as instruções da documentação oficial.
+
+Configurar cabeçalhos de segurança: Adicione cabeçalhos de segurança para proteger contra ataques comuns:
+
+plaintext
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "DENY"
+Header always set X-XSS-Protection "1; mode=block"
+Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+Desabilitar módulos desnecessários: Remova ou desabilite módulos que não são necessários para o funcionamento do seu serviço web. Isso reduz a superfície de ataque e melhora a segurança geral do servidor.
+
+Gerenciar logs do servidor: Monitore os logs de acesso e erro do Apache para identificar e responder rapidamente a possíveis problemas de segurança:
+
+plaintext
+tail -f /var/log/httpd/access_log
+tail -f /var/log/httpd/error_log
+Seguindo essas práticas, você pode aumentar significativamente a segurança do seu serviço web Apache. Se precisar de mais detalhes, você pode conferir guias completos como este e este.
