@@ -41,6 +41,11 @@ echo '
 <IfModule mod_ssl.c>
     SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1
 </IfModule>' >> /usr/local/apache2/conf/httpd.conf
+echo 'Header always set X-Content-Type-Options "nosniff"' >> /usr/local/apache2/conf/httpd.conf
+echo 'Header always set X-Frame-Options "DENY"' >> /usr/local/apache2/conf/httpd.conf
+echo 'Header always set X-XSS-Protection "1; mode=block"' >> /usr/local/apache2/conf/httpd.conf
+echo 'Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"' >> /usr/local/apache2/conf/httpd.conf
+
 "
 
 # Reiniciar Apache no container para aplicar configurações
