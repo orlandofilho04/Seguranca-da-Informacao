@@ -22,6 +22,8 @@ iptables -A INPUT -i lo -j ACCEPT  # Loopback
 iptables -A OUTPUT -o lo -j ACCEPT
 
 # Salvar configurações do iptables
+mkdir -p /etc/iptables
+touch /etc/iptables/rules.v4
 iptables-save > /etc/iptables/rules.v4
 
 # Configurar UFW como camada adicional
@@ -32,7 +34,7 @@ ufw allow 80/tcp
 ufw enable
 
 # Configuração de Hardening no Container Apache
-docker exec -it web bash -c "
+sudo docker exec -it web bash -c "
 apt-get update -y && apt-get install -y vim
 sed -i 's/Options Indexes/Options -Indexes/' /usr/local/apache2/conf/httpd.conf
 echo '
