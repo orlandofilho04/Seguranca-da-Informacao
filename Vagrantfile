@@ -12,8 +12,10 @@ Vagrant.configure("2") do |config|
       end
       vm1.vm.network "private_network", type: "private_network", ip: "192.168.56.10"
       vm1.vm.synced_folder "./DockerWeb", "/VagrantWeb"
-      vm1.vm.network "forwarded_port", guest: 80, host: 8081
+      vm1.vm.network "forwarded_port", guest: 80, host: 8080
+      vm1.vm.network "forwarded_port", guest: 22, host: 2222
       vm1.vm.provision "shell", path: "provisioners/web_provision.sh"
+      vm1.vm.provision "shell", path: "provisioners/hardening.sh"
     end
     #MAQUINA CLIENTE
     config.vm.define "vm2" do |vm2|

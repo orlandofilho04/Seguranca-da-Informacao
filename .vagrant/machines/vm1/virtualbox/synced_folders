@@ -1,0 +1,1 @@
+{"virtualbox":{"/VagrantWeb":{"guestpath":"/VagrantWeb","hostpath":"/var/www/html/testes/Seguranca-da-Informacao/DockerWeb","disabled":false,"__vagrantfile":true},"/vagrant":{"guestpath":"/vagrant","hostpath":"/var/www/html/testes/Seguranca-da-Informacao","disabled":false,"__vagrantfile":true}}}

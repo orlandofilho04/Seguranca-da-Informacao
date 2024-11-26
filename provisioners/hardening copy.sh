@@ -60,6 +60,7 @@ echo "}" >> /etc/xinetd.d/apache
 
 
 # Configurando o xinetd para bloquear ssh
+
 echo "service ssh" >> /etc/xinetd.d/ssh
 echo "{" >> /etc/xinetd.d/ssh
 echo "    disable         = no" >> /etc/xinetd.d/ssh
@@ -82,6 +83,7 @@ echo "    rlimit_stack    = 16M" >> /etc/xinetd.d/ssh
 echo "    rlimit_nofile   = 1024" >> /etc/xinetd.d/ssh
 echo "    nice            = 10" >> /etc/xinetd.d/ssh
 echo "}" >> /etc/xinetd.d/ssh
+
 
 # Reiniciando o xinetd
 /etc/init.d/xinetd restart
