@@ -2,22 +2,21 @@
 
 # Atualizar repositórios e instalar pacotes necessários
 apt-get update -y
-apt-get install -y iptables ssh curl wget logrotate
+apt-get install -y iptables ssh curl wget
 
 # Configuração do firewall (iptables)
 iptables -P INPUT DROP
-iptables -P OUTPUT DROP
 iptables -P FORWARD DROP
+iptables -P OUTPUT DROP
 
-# Permitir tráfego essencial
-iptables -A INPUT -p tcp --dport 80 -j ACCEPT  # HTTP
-iptables -A OUTPUT -p tcp --sport 80 -j ACCEPT
-iptables -A INPUT -p tcp --dport 22 -j ACCEPT  # SSH
-iptables -A OUTPUT -p tcp --sport 22 -j ACCEPT
-iptables -A OUTPUT -p udp --dport 53 -j ACCEPT  # DNS
-iptables -A INPUT -p udp --sport 53 -j ACCEPT
-iptables -A OUTPUT -p tcp --dport 443 -j ACCEPT  # HTTPS
-iptables -A INPUT -p tcp --sport 443 -j ACCEPT
+# Permitir conexões já estabelecidas ou relacionadas
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A OUTPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+# Permitir novas conexões para portas específicas
+iptables -A INPUT -p tcp --dport 80 -m conntrack --ctstate NEW -j ACCEPT  # HTTP
+iptables -A INPUT -p tcp --dport 443 -m conntrack --ctstate NEW -j ACCEPT # HTTPS
+iptables -A INPUT -p tcp --dport 22 -m conntrack --ctstate NEW -j ACCEPT  # SSH
 iptables -A INPUT -i lo -j ACCEPT  # Loopback
 iptables -A OUTPUT -o lo -j ACCEPT
 
@@ -25,13 +24,6 @@ iptables -A OUTPUT -o lo -j ACCEPT
 mkdir -p /etc/iptables
 touch /etc/iptables/rules.v4
 iptables-save > /etc/iptables/rules.v4
-
-# Configurar UFW como camada adicional
-ufw default deny incoming
-ufw default allow outgoing
-ufw allow 22/tcp
-ufw allow 80/tcp
-ufw enable
 
 # Configuração de Hardening no Container Apache
 sudo docker exec -it web bash -c "
@@ -43,9 +35,6 @@ echo '
 </IfModule>' >> /usr/local/apache2/conf/httpd.conf
 echo 'Header always set X-Content-Type-Options "nosniff"' >> /usr/local/apache2/conf/httpd.conf
 echo 'Header always set X-Frame-Options "DENY"' >> /usr/local/apache2/conf/httpd.conf
-echo 'Header always set X-XSS-Protection "1; mode=block"' >> /usr/local/apache2/conf/httpd.conf
-echo 'Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"' >> /usr/local/apache2/conf/httpd.conf
-
 "
 
 # Reiniciar Apache no container para aplicar configurações
