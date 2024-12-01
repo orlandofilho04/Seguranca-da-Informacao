@@ -1,6 +1,7 @@
 ## Trabalho Final de Segurança da Informação
 
 Neste projeto, você se concentrará em projetar, implantar e gerenciar uma rede usando tecnologia Linux, com ênfase no serviço Web e virtualização com Vagrant e Docker.
+O projeto consiste em uma máquina virtual, onde há um container do serviço Apache, onde podemos hospedar uma site. Esse site em questão é uma dashboard de visualização de dados, todas as configurações foram consideradas para esse cenário em específico
 
 ## Instruções de Uso
 
@@ -13,8 +14,10 @@ Neste projeto, você se concentrará em projetar, implantar e gerenciar uma rede
 ## Estrutura do Projeto
 
 - DockerWeb
+  - httpd.conf
   - index.html
 - provisioners
+  - hardening.sh
   - web_provision.sh
   - vm2_provision.sh
 - Vagrantfile
@@ -30,31 +33,54 @@ Neste projeto, você se concentrará em projetar, implantar e gerenciar uma rede
 - Imagem Docker do serviço a ser utilizado: Web.
   - "Web: https://hub.docker.com/_/httpd"
 
-## Topologia
+## Planejamento do Hardware
 
-A topologia de rede resultante desse trabalho é uma rede privada com duas máquinas virtuais: uma configurada com IP estático (VM1 - Gateway) e a outra adquirindo seu IP por DHCP (VM2 - Cliente). E todos os containers pegando IP da VM1.
+O projeto consiste em uma solução com foco em segurança da informação para uma aplicação web. A arquitetura inclui uma máquina virtual utilizando Vagrant, containers Docker e o serviço web Apache, com configuração de hardening de segurança.
 
-- VM1 (Gateway):
+### Configuração de Hardware das VMs
 
-  - Hostname: vm1
-  - Box: ubuntu/focal64
-  - Atribuição de 2048 MB de memória e 2 CPUs
-  - Configuração de rede:
-    - Interface de rede privada com IP estático: 192.168.56.10
-    - Port forwarding de 80 no guest para 8081 no host (192.168.56.10)
-    - Compartilhamento de pastas entre a máquina hospedeira e a máquina virtual
-    - Provisionamento de diferentes serviços
+O ambiente utilizará duas VMs com configurações específicas para simular um servidor web e um cliente. 
 
-- VM2 (Cliente):
-  - Hostname: vm2
-  - Box: ubuntu/focal64
-  - Atribuição de 2048 MB de memória e 2 CPUs
-  - Configuração de rede:
-    - Interface de rede configurada para obter um endereço IP via DHCP
+#### VM1: Servidor Web
+- **Hostname:** `vm1`
+- **Box:** `ubuntu/focal64`
+- **Recursos Alocados:**
+  - **Memória RAM:** 2048 MB
+  - **CPUs:** 2 núcleos
+- **Armazenamento:**
+  - 20 GB de disco rígido virtual.
+- **Rede:**
+  - IP estático: `192.168.56.10`
+  - Máscara de sub-rede: `/24` (255.255.255.0)
+  - Port Forwarding:
+    - Porta 80 (HTTP) no guest mapeada para a porta 8080 no host.
+    - Porta 22 (SSH) no guest mapeada para a porta 2222 no host.
+- **Funcionalidades:** 
+  - Executar o container Docker com o servidor Apache HTTP.
+  - Configurações avançadas de segurança.
+
+#### VM2: Cliente
+- **Hostname:** `vm2`
+- **Box:** `ubuntu/focal64`
+- **Recursos Alocados:**
+  - **Memória RAM:** 2048 MB
+  - **CPUs:** 2 núcleos
+- **Armazenamento:**
+  - 10 GB de disco rígido virtual.
+- **Rede:**
+  - Configurada para obter endereço IP via DHCP.
+  - Máscara de sub-rede: `/24` (255.255.255.0).
+
+#### Hardware Recomendado para o Host
+- **Sistema Operacional:** Ubuntu-based (versão atualizada e compatível com Vagrant e VirtualBox).
+- **Memória RAM:** Pelo menos 8 GB.
+- **CPU:** Processador com pelo menos 4 núcleos e suporte a virtualização (VT-x/AMD-V habilitado na BIOS).
+- **Armazenamento:** 100 GB de espaço disponível no disco.
+- **Placa de Rede:** Suporte a NAT e Rede Privada.
 
 ## Descrição de Rede
 
-- Sub-rede da VM1 (Gateway):
+- Sub-rede da VM1:
 
   - Interface 1:
     - Tipo: Rede Privada
@@ -71,7 +97,35 @@ A topologia de rede resultante desse trabalho é uma rede privada com duas máqu
 
 Os scripts de provisionamento de cada VM estão localizados na pasta "provisioners". Cada script executa as configurações e a instalação dos serviços necessários para cada VM e cada container funcionar conforme sua função.
 
-# Explicação das Linhas de Código
+### Explicação das Linhas de Código - web_provision.sh
+
+1. **Verificar atualizações e instalar serviços necessários**
+
+  ```sh
+  apt update
+  apt install -y docker.io vim curl wget git
+  ```
+
+  **Descrição:** Instala os serviços `docker.io`, `vim`, `curl`, `wget` e `git`.
+
+2. **Baixar a imagem oficial do servidor Apache HTTP (httpd) do Docker Hub e subir um container com o seriço necessário**
+  ```sh
+  docker pull httpd
+  sudo docker run -d -v /VagrantWeb:/usr/local/apache2/htdocs/ --restart always --name web -p 80:80 httpd
+  ```
+
+  **Descrição:** O comando cria e executa um container Docker em segundo plano com o servidor Apache HTTP (httpd). Ele mapeia o diretório local /VagrantWeb para o diretório de hospedagem do Apache no container (/usr/local/apache2/htdocs/), garantindo que os arquivos locais sejam servidos pelo servidor. O container é configurado para reiniciar automaticamente em caso de falhas ou reinicializações do host, utiliza o nome web e redireciona a porta 80 do host para a porta 80 do container, permitindo o acesso ao servidor Apache.
+
+3. **Desabilitar login root por SSH**
+
+  ```sh
+  sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+  systemctl restart sshd
+   ```
+
+   **Descrição:** Os comandos desabilitam o login direto como root via SSH, substituindo a configuração PermitRootLogin yes por PermitRootLogin no no arquivo de configuração do SSH e reiniciando o serviço com systemctl restart sshd. Essa medida melhora a segurança, reduzindo o risco de ataques direcionados ao usuário root..
+
+### Explicação das Linhas de Código - hardening.sh
 
 1. **Modificar a configuração do Apache para desativar a listagem de diretórios**
 
@@ -199,7 +253,7 @@ Os scripts de provisionamento de cada VM estão localizados na pasta "provisione
 
 - Este Vagrantfile configura duas máquinas virtuais (VMs) usando Vagrant e VirtualBox como provedor. As VMs são configuradas com o sistema operacional Ubuntu 20.04 LTS (focal64).
 
-- A primeira máquina, chamada "vm1", é configurada como um gateway. Ela recebe o hostname "vm1" e utiliza a box "ubuntu/focal64". A VM é configurada com 2048 MB de memória e 2 CPUs. A rede privada é configurada com o IP estático 192.168.56.10, e há redirecionamento de portas: a porta 80 (HTTP) da VM é redirecionada para a porta 8080 do host, e a porta 22 (SSH) da VM é redirecionada para a porta 2222 do host. Além disso, a pasta local ./DockerWeb é sincronizada com a pasta /VagrantWeb na VM. Dois scripts de provisionamento, web_provision.sh e hardening.sh, são executados para configurar a VM.
+- A primeira máquina, chamada "vm1" recebe o hostname "vm1" e utiliza a box "ubuntu/focal64". A VM é configurada com 2048 MB de memória e 2 CPUs. A rede privada é configurada com o IP estático 192.168.56.10, e há redirecionamento de portas: a porta 80 (HTTP) da VM é redirecionada para a porta 8080 do host, e a porta 22 (SSH) da VM é redirecionada para a porta 2222 do host. Além disso, a pasta local ./DockerWeb é sincronizada com a pasta /VagrantWeb na VM. Dois scripts de provisionamento, web_provision.sh e hardening.sh, são executados para configurar a VM.
 
 - A segunda máquina, chamada "vm2", é configurada como cliente. Ela recebe o hostname "vm2" e utiliza a mesma box "ubuntu/focal64". A VM também é configurada com 2048 MB de memória e 2 CPUs. A rede privada é configurada para obter um endereço IP via DHCP. Um script de provisionamento, vm2_provision.sh, é executado para configurar a VM.
 
