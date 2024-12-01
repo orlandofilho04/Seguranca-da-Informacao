@@ -39,9 +39,10 @@ O projeto consiste em uma solução com foco em segurança da informação para 
 
 ### Configuração de Hardware das VMs
 
-O ambiente utilizará duas VMs com configurações específicas para simular um servidor web e um cliente. 
+O ambiente utilizará duas VMs com configurações específicas para simular um servidor web e um cliente.
 
 #### VM1: Servidor Web
+
 - **Hostname:** `vm1`
 - **Box:** `ubuntu/focal64`
 - **Recursos Alocados:**
@@ -55,11 +56,12 @@ O ambiente utilizará duas VMs com configurações específicas para simular um 
   - Port Forwarding:
     - Porta 80 (HTTP) no guest mapeada para a porta 8080 no host.
     - Porta 22 (SSH) no guest mapeada para a porta 2222 no host.
-- **Funcionalidades:** 
+- **Funcionalidades:**
   - Executar o container Docker com o servidor Apache HTTP.
   - Configurações avançadas de segurança.
 
 #### VM2: Cliente
+
 - **Hostname:** `vm2`
 - **Box:** `ubuntu/focal64`
 - **Recursos Alocados:**
@@ -72,6 +74,7 @@ O ambiente utilizará duas VMs com configurações específicas para simular um 
   - Máscara de sub-rede: `/24` (255.255.255.0).
 
 #### Hardware Recomendado para o Host
+
 - **Sistema Operacional:** Ubuntu-based (versão atualizada e compatível com Vagrant e VirtualBox).
 - **Memória RAM:** Pelo menos 8 GB.
 - **CPU:** Processador com pelo menos 4 núcleos e suporte a virtualização (VT-x/AMD-V habilitado na BIOS).
@@ -101,29 +104,30 @@ Os scripts de provisionamento de cada VM estão localizados na pasta "provisione
 
 1. **Verificar atualizações e instalar serviços necessários**
 
-  ```sh
-  apt update
-  apt install -y docker.io vim curl wget git
-  ```
+```sh
+apt update
+apt install -y docker.io vim curl wget git
+```
 
-  **Descrição:** Instala os serviços `docker.io`, `vim`, `curl`, `wget` e `git`.
+**Descrição:** Instala os serviços `docker.io`, `vim`, `curl`, `wget` e `git`.
 
 2. **Baixar a imagem oficial do servidor Apache HTTP (httpd) do Docker Hub e subir um container com o seriço necessário**
-  ```sh
-  docker pull httpd
-  sudo docker run -d -v /VagrantWeb:/usr/local/apache2/htdocs/ --restart always --name web -p 80:80 httpd
-  ```
 
-  **Descrição:** O comando cria e executa um container Docker em segundo plano com o servidor Apache HTTP (httpd). Ele mapeia o diretório local /VagrantWeb para o diretório de hospedagem do Apache no container (/usr/local/apache2/htdocs/), garantindo que os arquivos locais sejam servidos pelo servidor. O container é configurado para reiniciar automaticamente em caso de falhas ou reinicializações do host, utiliza o nome web e redireciona a porta 80 do host para a porta 80 do container, permitindo o acesso ao servidor Apache.
+```sh
+docker pull httpd
+sudo docker run -d -v /VagrantWeb:/usr/local/apache2/htdocs/ --restart always --name web -p 80:80 httpd
+```
+
+**Descrição:** O comando cria e executa um container Docker em segundo plano com o servidor Apache HTTP (httpd). Ele mapeia o diretório local /VagrantWeb para o diretório de hospedagem do Apache no container (/usr/local/apache2/htdocs/), garantindo que os arquivos locais sejam servidos pelo servidor. O container é configurado para reiniciar automaticamente em caso de falhas ou reinicializações do host, utiliza o nome web e redireciona a porta 80 do host para a porta 80 do container, permitindo o acesso ao servidor Apache.
 
 3. **Desabilitar login root por SSH**
 
-  ```sh
-  sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
-  systemctl restart sshd
-   ```
+```sh
+sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+systemctl restart sshd
+```
 
-   **Descrição:** Os comandos desabilitam o login direto como root via SSH, substituindo a configuração PermitRootLogin yes por PermitRootLogin no no arquivo de configuração do SSH e reiniciando o serviço com systemctl restart sshd. Essa medida melhora a segurança, reduzindo o risco de ataques direcionados ao usuário root..
+**Descrição:** Os comandos desabilitam o login direto como root via SSH, substituindo a configuração PermitRootLogin yes por PermitRootLogin no no arquivo de configuração do SSH e reiniciando o serviço com systemctl restart sshd. Essa medida melhora a segurança, reduzindo o risco de ataques direcionados ao usuário root..
 
 ### Explicação das Linhas de Código - hardening.sh
 
@@ -244,6 +248,8 @@ Os scripts de provisionamento de cada VM estão localizados na pasta "provisione
 
      service xinetd restart
      ```
+
+     **Descrição:** Configuram serviços para serem gerenciados pelo xinetd, um daemon que gerencia a inicialização de serviços sob demanda.
 
 ## Configuração dos Serviços
 
